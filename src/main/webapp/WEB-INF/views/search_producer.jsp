@@ -3,6 +3,12 @@
 <%@page import="java.util.List"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+    
+<%
+	String st = request.getParameter("searchText");
+	List<Producer> producers = ProducerDao.searchProducerByProducerName(st);
+%> 
+    
 <!DOCTYPE html>
 <html>
 <head>
@@ -30,10 +36,7 @@
 			placeholder="제작사 이름을 입력하세요">
 		<button onclick="handleSearchClick()">검색</button>
 	</div>
-	<%
-		String searchText = request.getParameter("searchText");
-		List<Producer> producers = ProducerDao.searchProducerByProducerName(searchText);
-	%>
+	
 	<table>
 		<thead>
 			<tr>

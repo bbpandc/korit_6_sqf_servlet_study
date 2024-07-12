@@ -3,6 +3,7 @@ package com.study.dvd.dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +11,7 @@ import com.study.dvd.entity.Producer;
 import com.study.dvd.util.DBConnectionMgr;
 
 public class ProducerDao {
-	private static DBConnectionMgr pool = DBConnectionMgr.getInstance();
+	private static DBConnectionMgr pool = DBConnectionMgr.getInstance(); // 싱글톤 객체 가져옴
 	
 	public static List<Producer> searchProducerByProducerName(String searchText) {
 		List<Producer> producers = new ArrayList<Producer>();
@@ -26,6 +27,7 @@ public class ProducerDao {
 			sql.append("where producer_name like ? limit 0, 50");
 			pstmt = con.prepareStatement(sql.toString());
 			pstmt.setString(1, "%" + searchText + "%");
+			// 쿼리의 결과
 			rs = pstmt.executeQuery();
 			
 			while(rs.next()) {
@@ -40,9 +42,37 @@ public class ProducerDao {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
+			// 객체 소멸
 			pool.freeConnection(con, pstmt, rs);
 		}
 		
 		return producers;
+	}
+	
+	public static int save(Producer producer) {
+		int successCount = 0;
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		
+		try {
+			con = pool.getConnection();
+			String sql = "insert into producer_tb values(0, ?)";
+			pstmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);	// auto_increment된 키값 가져오기
+			pstmt.setString(1, producer.getProducerName());
+			successCount = pstmt.executeUpdate();
+			rs = pstmt.getGeneratedKeys();
+			
+			while(rs.next()) {
+				producer.setProducerId(rs.getInt(1));
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			pool.freeConnection(con, pstmt, rs);
+		}
+		
+		return successCount;
 	}
 }
